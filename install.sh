@@ -1,906 +1,395 @@
 #!/data/data/com.termux/files/usr/bin/bash
+# ==============================================================================
+# JIHAD BHAI MASTER TERMUX INSTALLER (install.sh)
+# Single-file production-ready installer with Thick ASCII Renderer & Owner Panel
+# ==============================================================================
+
 set -e
 
-# ============================================================
-# JIHAD BHAI MASTER TERMUX
-# AUTO DEPENDENCY INSTALLER + SECURE OWNER PANEL
-# ============================================================
+# Configuration Directories
+CONFIG_DIR="$HOME/.jihad-termux"
+CONFIG_FILE="$CONFIG_DIR/config.env"
+BIN_DIR="$PREFIX/bin"
 
-BASE="$HOME/.jihad-termux"
-CONFIG="$BASE/config"
-HASH_FILE="$BASE/.owner_pin_hash"
-COLOR_FILE="$BASE/.banner_color"
+# Default Credentials & Settings
+DEFAULT_OWNER="JIHAD BHAI"
+DEFAULT_BANNER="JIHAD BHAI"
+DEFAULT_TELEGRAM="@TEAM_XBD1M"
+DEFAULT_COLOR="1"  # 1: Green
+DEFAULT_PIN_HASH="c427ebca51f2f01f4639e450ee638f29bfbf9b09930867fb2179b009aebe1bf7" # SHA-256 for "25535"
 
-OWNER_NAME="JIHAD BHAI"
-TELEGRAM="@TEAM_XBD1M"
+# Colors Mapping
+get_color_code() {
+    case "$1" in
+        1|Green)       echo "\033[1;32m" ;;
+        2|Red)         echo "\033[1;31m" ;;
+        3|Blue)        echo "\033[1;34m" ;;
+        4|Yellow)      echo "\033[1;33m" ;;
+        5|Purple)      echo "\033[1;35m" ;;
+        6|Cyan)        echo "\033[1;36m" ;;
+        7|White)       echo "\033[1;37m" ;;
+        8|Orange)      echo "\033[38;5;208m" ;;
+        9|Pink)        echo "\033[38;5;205m" ;;
+        10|LightBlue)  echo "\033[38;5;117m" ;;
+        *)             echo "\033[1;32m" ;;
+    esac
+}
+NC="\033[0m"
 
-# SHA-256 of Owner PIN:25535
-OWNER_PIN_HASH="c6c9686891996d754575c6330ec5049ee18eea3379652cc47908c3b9d768c837"
+# Ensure Infrastructure Directory Exists
+mkdir -p "$CONFIG_DIR"
+chmod 700 "$CONFIG_DIR"
 
-clear
+# ------------------------------------------------------------------------------
+# Package Installation Check
+# ------------------------------------------------------------------------------
+echo -e "\033[1;34m[*] Checking required packages...\033[0m"
+REQUIRED_PKGS=(coreutils git zsh curl ncurses-utils cmatrix openssl)
+MISSING_PKGS=()
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "             JIHAD BHAI MASTER TERMUX"
-echo "             AUTO INSTALL SYSTEM"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo
+for pkg in "${REQUIRED_PKGS[@]}"; do
+    if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+        MISSING_PKGS+=("$pkg")
+    fi
+done
 
-# ============================================================
-# TERMUX CHECK
-# ============================================================
-
-if ! command -v pkg >/dev/null 2>&1; then
-    echo "❌ এই ফাইলটি শুধুমাত্র Termux-এ চালাতে হবে।"
-    exit 1
+if [ ${#MISSING_PKGS[@]} -gt 0 ]; then
+    echo -e "\033[1;33m[*] Installing missing packages: ${MISSING_PKGS[*]}\033[0m"
+    pkg update -y && pkg install -y "${MISSING_PKGS[@]}"
+else
+    echo -e "\033[1;32m[✓] All dependencies are already installed.\033[0m"
 fi
 
-# ============================================================
-# AUTO DEPENDENCY INSTALL
-# ============================================================
+# ------------------------------------------------------------------------------
+# Embedded Dynamic Thick ASCII Renderer Engine
+# ------------------------------------------------------------------------------
+cat << 'EOF' > "$CONFIG_DIR/ascii_render.sh"
+#!/data/data/com.termux/files/usr/bin/bash
 
-echo "📦 Checking required packages..."
-echo
+TEXT=$(echo "$1" | tr 'a-z' 'A-Z')
 
-pkg update -y
+l1=""; l2=""; l3=""; l4=""; l5=""
 
-PACKAGES=(
-    coreutils
-    git
-    zsh
-    curl
-    ncurses-utils
-    cmatrix
-)
+for (( i=0; i<${#TEXT}; i++ )); do
+    char="${TEXT:$i:1}"
+    case "$char" in
+        A) l1+=" ██████  "; l2+="██    ██ "; l3+="████████ "; l4+="██    ██ "; l5+="██    ██ " ;;
+        B) l1+="██████  "; l2+="██   ██ "; l3+="██████  "; l4+="██   ██ "; l5+="██████  " ;;
+        C) l1+=" ██████  "; l2+="██       "; l3+="██       "; l4+="██       "; l5+=" ██████  " ;;
+        D) l1+="██████   "; l2+="██   ██  "; l3+="██    ██ "; l4+="██   ██  "; l5+="██████   " ;;
+        E) l1+="████████ "; l2+="██       "; l3+="██████   "; l4+="██       "; l5+="████████ " ;;
+        F) l1+="████████ "; l2+="██       "; l3+="██████   "; l4+="██       "; l5+="██       " ;;
+        G) l1+=" ██████  "; l2+="██       "; l3+="██   ████"; l4+="██    ██ "; l5+=" ██████  " ;;
+        H) l1+="██    ██ "; l2+="██    ██ "; l3+="████████ "; l4+="██    ██ "; l5+="██    ██ " ;;
+        I) l1+="████████ "; l2+="   ██    "; l3+="   ██    "; l4+="   ██    "; l5+="████████ " ;;
+        J) l1+="   ██████"; l2+="      ██ "; l3+="      ██ "; l4+="██    ██ "; l5+=" ██████  " ;;
+        K) l1+="██    ██ "; l2+="██   ██  "; l3+="██████   "; l4+="██   ██  "; l5+="██    ██ " ;;
+        L) l1+="██       "; l2+="██       "; l3+="██       "; l4+="██       "; l5+="████████ " ;;
+        M) l1+="██    ██ "; l2+="████████ "; l3+="██ ██ ██ "; l4+="██    ██ "; l5+="██    ██ " ;;
+        N) l1+="██    ██ "; l2+="████  ██ "; l3+="██ ██ ██ "; l4+="██  ████ "; l5+="██    ██ " ;;
+        O) l1+=" ██████  "; l2+="██    ██ "; l3+="██    ██ "; l4+="██    ██ "; l5+=" ██████  " ;;
+        P) l1+="██████  "; l2+="██   ██ "; l3+="██████  "; l4+="██      "; l5+="██      " ;;
+        Q) l1+=" ██████  "; l2+="██    ██ "; l3+="██    ██ "; l4+="██  ██   "; l5+=" ████ ██ " ;;
+        R) l1+="██████  "; l2+="██   ██ "; l3+="██████  "; l4+="██   ██ "; l5+="██    ██ " ;;
+        S) l1+=" ██████  "; l2+="██       "; l3+=" ██████  "; l4+="      ██ "; l5+="██████   " ;;
+        T) l1+="████████ "; l2+="   ██    "; l3+="   ██    "; l4+="   ██    "; l5+="   ██    " ;;
+        U) l1+="██    ██ "; l2+="██    ██ "; l3+="██    ██ "; l4+="██    ██ "; l5+=" ██████  " ;;
+        V) l1+="██    ██ "; l2+="██    ██ "; l3+="██    ██ "; l4+=" ██  ██  "; l5+="   ██    " ;;
+        W) l1+="██    ██ "; l2+="██    ██ "; l3+="██ ██ ██ "; l4+="████████ "; l5+="██    ██ " ;;
+        X) l1+="██    ██ "; l2+=" ██  ██  "; l3+="   ██    "; l4+=" ██  ██  "; l5+="██    ██ " ;;
+        Y) l1+="██    ██ "; l2+=" ██  ██  "; l3+="   ██    "; l4+="   ██    "; l5+="   ██    " ;;
+        Z) l1+="████████ "; l2+="    ██   "; l3+="   ██    "; l4+="  ██     "; l5+="████████ " ;;
+        0) l1+=" ██████  "; l2+="██  ████ "; l3+="██ ██ ██ "; l4+="████  ██ "; l5+=" ██████  " ;;
+        1) l1+="  ████   "; l2+="    ██   "; l3+="    ██   "; l4+="    ██   "; l5+="████████ " ;;
+        2) l1+=" ██████  "; l2+="██    ██ "; l3+="   ███   "; l4+="  ██     "; l5+="████████ " ;;
+        3) l1+=" ██████  "; l2+="██    ██ "; l3+="  █████  "; l4+="██    ██ "; l5+=" ██████  " ;;
+        4) l1+="██    ██ "; l2+="██    ██ "; l3+="████████ "; l4+="      ██ "; l5+="      ██ " ;;
+        5) l1+="████████ "; l2+="██       "; l3+="███████  "; l4+="      ██ "; l5+="██████   " ;;
+        6) l1+=" ██████  "; l2+="██       "; l3+="███████  "; l4+="██    ██ "; l5+=" ██████  " ;;
+        7) l1+="████████ "; l2+="      ██ "; l3+="    ██   "; l4+="   ██    "; l5+="  ██     " ;;
+        8) l1+=" ██████  "; l2+="██    ██ "; l3+=" ██████  "; l4+="██    ██ "; l5+=" ██████  " ;;
+        9) l1+=" ██████  "; l2+="██    ██ "; l3+=" ███████ "; l4+="      ██ "; l5+=" ██████  " ;;
+        "-") l1+="         "; l2+="         "; l3+="████████ "; l4+="         "; l5+="         " ;;
+        " ") l1+="   "; l2+="   "; l3+="   "; l4+="   "; l5+="   " ;;
+        *)  l1+=" "; l2+=" "; l3+=" "; l4+=" "; l5+=" " ;;
+    esac
+done
 
-for PACKAGE in "${PACKAGES[@]}"; do
+echo "$l1"
+echo "$l2"
+echo "$l3"
+echo "$l4"
+echo "$l5"
+EOF
 
-    if dpkg -s "$PACKAGE" >/dev/null 2>&1; then
-        echo "✅ $PACKAGE already installed"
+chmod 755 "$CONFIG_DIR/ascii_render.sh"
+
+# ------------------------------------------------------------------------------
+# Configuration Manager
+# ------------------------------------------------------------------------------
+save_config() {
+    cat << EOF > "$CONFIG_FILE"
+BANNER_NAME="$1"
+TELEGRAM="$2"
+COLOR_CODE="$3"
+PIN_HASH="$4"
+EOF
+    chmod 600 "$CONFIG_FILE"
+}
+
+load_config() {
+    if [ -f "$CONFIG_FILE" ]; then
+        source "$CONFIG_FILE"
     else
-        echo "📥 Installing $PACKAGE..."
-        pkg install -y "$PACKAGE"
+        BANNER_NAME="$DEFAULT_BANNER"
+        TELEGRAM="$DEFAULT_TELEGRAM"
+        COLOR_CODE="$DEFAULT_COLOR"
+        PIN_HASH="$DEFAULT_PIN_HASH"
+    fi
+}
+
+# ------------------------------------------------------------------------------
+# First Time Banner Setup Form
+# ------------------------------------------------------------------------------
+load_config
+
+if [ ! -f "$CONFIG_FILE" ] || [ "$FORCE_SETUP" = "true" ] || [ "$1" = "--force-setup" ]; then
+    clear
+    echo -e "\033[1;36m╔════════════════════════════════════════════════╗\033[0m"
+    echo -e "\033[1;36m║        🎨 FIRST TIME BANNER SETUP             ║\033[0m"
+    echo -e "\033[1;36m╠════════════════════════════════════════════════╣\033[0m"
+    echo -e "\033[1;36m║                                                ║\033[0m"
+    echo -e "\033[1;36m║  Enter your Banner Name                        ║\033[0m"
+    echo -e "\033[1;36m║                                                ║\033[0m"
+    echo -e "\033[1;36m╚════════════════════════════════════════════════╝\033[0m"
+    echo ""
+    read -p "Banner Name: " INPUT_NAME
+
+    # Clean input
+    INPUT_NAME=$(echo "$INPUT_NAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    
+    if [ -z "$INPUT_NAME" ]; then
+        BANNER_NAME="$DEFAULT_BANNER"
+    else
+        BANNER_NAME="$INPUT_NAME"
     fi
 
-done
-
-echo
-echo "✅ সব required package প্রস্তুত।"
-echo
-
-# ============================================================
-# CREATE SYSTEM DIRECTORY
-# ============================================================
-
-echo "📁 Creating JIHAD BHAI system..."
-
-mkdir -p "$BASE"
-
-chmod 700 "$BASE"
-
-# ============================================================
-# SECURE PIN
-# ============================================================
-
-printf '%s\n' "$OWNER_PIN_HASH" > "$HASH_FILE"
-
-chmod 600 "$HASH_FILE"
-
-# ============================================================
-# CONFIG
-# ============================================================
-
-cat > "$CONFIG" <<EOF
-OWNER_NAME="JIHAD BHAI"
-TELEGRAM="@TEAM_XBD1M"
-EOF
-
-chmod 600 "$CONFIG"
-
-# Default Green
-printf '1;32\n' > "$COLOR_FILE"
-
-chmod 600 "$COLOR_FILE"
-
-# ============================================================
-# DYNAMIC THICK ASCII BANNER ENGINE
-# ============================================================
-
-cat > "$BASE/render_banner" <<'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-
-BASE="$HOME/.jihad-termux"
-
-source "$BASE/config"
-
-declare -A A
-
-A[A]=' █████╗
-██╔══██╗
-███████║
-██╔══██║
-██║  ██║'
-
-A[B]='██████╗
-██╔══██╗
-██████╔╝
-██╔══██╗
-██████╔╝'
-
-A[C]=' ██████╗
-██╔════╝
-██║
-██║
-╚██████╗'
-
-A[D]='██████╗
-██╔══██╗
-██║  ██║
-██║  ██║
-██████╔╝'
-
-A[E]='███████╗
-██╔════╝
-█████╗
-██╔════╝
-███████╗'
-
-A[F]='███████╗
-██╔════╝
-█████╗
-██╔════╝
-██║'
-
-A[G]=' ██████╗
-██╔════╝
-██║  ███╗
-██║   ██║
-╚██████╔╝'
-
-A[H]='██╗  ██╗
-██║  ██║
-███████║
-██╔══██║
-██║  ██║'
-
-A[I]='██╗
-██║
-██║
-██║
-██║'
-
-A[J]='     ██╗
-     ██║
-     ██║
-██   ██║
-╚█████╔╝'
-
-A[K]='██╗  ██╗
-██║ ██╔╝
-█████╔╝
-██╔═██╗
-██║  ██╗'
-
-A[L]='██╗
-██║
-██║
-██║
-███████╗'
-
-A[M]='███╗   ███╗
-████╗ ████║
-██╔████╔██║
-██║╚██╔╝██║
-██║ ╚═╝ ██║'
-
-A[N]='███╗   ██╗
-████╗  ██║
-██╔██╗ ██║
-██║╚██╗██║
-██║ ╚████║'
-
-A[O]=' ██████╗
-██╔═══██╗
-██║   ██║
-██║   ██║
-╚██████╔╝'
-
-A[P]='██████╗
-██╔══██╗
-██████╔╝
-██╔═══╝
-██║'
-
-A[Q]=' ██████╗
-██╔═══██╗
-██║   ██║
-██║▄▄ ██║
-╚██████╔╝'
-
-A[R]='██████╗
-██╔══██╗
-██████╔╝
-██╔══██╗
-██║  ██║'
-
-A[S]='███████╗
-██╔════╝
-███████╗
-╚════██║
-███████║'
-
-A[T]='████████╗
-╚══██╔══╝
-   ██║
-   ██║
-   ██║'
-
-A[U]='██╗   ██╗
-██║   ██║
-██║   ██║
-██║   ██║
-╚██████╔╝'
-
-A[V]='██╗   ██╗
-██║   ██║
-██║   ██║
-╚██╗ ██╔╝
- ╚████╔╝'
-
-A[W]='██╗    ██╗
-██║    ██║
-██║ █╗ ██║
-██║███╗██║
-╚███╔███╔╝'
-
-A[X]='██╗  ██╗
-╚██╗██╔╝
- ╚███╔╝
- ██╔██╗
-██╔╝ ██╗'
-
-A[Y]='██╗   ██╗
-╚██╗ ██╔╝
- ╚████╔╝
-  ╚██╔╝
-   ██║'
-
-A[Z]='███████╗
-╚════██║
-   ███╔╝
- ██╔╝
-███████╗'
-
-A[0]=' ██████╗
-██╔═████╗
-██║██╔██║
-████╔╝██║
-╚██████╔╝'
-
-A[1]=' ██╗
-███║
-╚██║
- ██║
- ██║'
-
-A[2]='██████╗
-╚════██╗
- █████╔╝
-██╔═══╝
-███████╗'
-
-A[3]='██████╗
-╚════██╗
- █████╔╝
-╚════██╗
-██████╔╝'
-
-A[4]='██╗  ██╗
-██║  ██║
-███████║
-╚════██║
-     ██║'
-
-A[5]='███████╗
-██╔════╝
-███████╗
-╚════██║
-███████║'
-
-A[6]=' ██████╗
-██╔════╝
-███████╗
-██╔══██║
-╚██████╔╝'
-
-A[7]='███████╗
-╚════██║
-    ██╔╝
-   ██╔╝
-   ██║'
-
-A[8]=' █████╗
-██╔══██╗
-╚█████╔╝
-██╔══██╗
-╚█████╔╝'
-
-A[9]=' █████╗
-██╔══██╗
-╚██████║
-╚════██║
-██████╔╝'
-
-NAME=$(printf '%s' "$OWNER_NAME" | tr '[:lower:]' '[:upper:]')
-
-for ((ROW=0; ROW<5; ROW++)); do
-
-    LINE=""
-
-    for ((I=0; I<${#NAME}; I++)); do
-
-        CHAR="${NAME:I:1}"
-
-        BLOCK="${A[$CHAR]}"
-
-        if [ -n "$BLOCK" ]; then
-            PART=$(printf '%s\n' "$BLOCK" | sed -n "$((ROW+1))p")
-        else
-            PART="     "
-        fi
-
-        LINE="${LINE}${PART}  "
-
-    done
-
-    printf '%s\n' "$LINE"
-
-done
-EOF
-
-chmod 700 "$BASE/render_banner"
-
-# ============================================================
-# BANNER COMMAND
-# ============================================================
-
-cat > "$BASE/banner" <<'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-
-BASE="$HOME/.jihad-termux"
-
-source "$BASE/config"
-
-COLOR_CODE="1;32"
-
-if [ -f "$BASE/.banner_color" ]; then
-    COLOR_CODE=$(cat "$BASE/.banner_color")
+    save_config "$BANNER_NAME" "$DEFAULT_TELEGRAM" "$DEFAULT_COLOR" "$DEFAULT_PIN_HASH"
+
+    echo ""
+    echo -e "\033[1;32m✅ Banner Name Saved!\033[0m"
+    echo ""
+    echo "Your Banner:"
+    COLOR=$(get_color_code "$DEFAULT_COLOR")
+    echo -e "$COLOR"
+    "$CONFIG_DIR/ascii_render.sh" "$BANNER_NAME"
+    echo -e "$NC"
+    sleep 2
 fi
 
-clear
+# ------------------------------------------------------------------------------
+# Create Executable System Commands
+# ------------------------------------------------------------------------------
 
-printf '\033[%sm' "$COLOR_CODE"
-
-echo
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo
-
-"$BASE/render_banner"
-
-echo
-
-printf '\033[1;37m'
-
-echo "              ✦ MASTER TERMUX ✦"
-echo
-echo "  👑 OWNER    : $OWNER_NAME"
-echo "  ✈ TELEGRAM : $TELEGRAM"
-echo "  ● STATUS    : ONLINE"
-echo "  ◈ SHELL     : ZSH"
-
-printf '\033[0m'
-
-printf '\033[%sm' "$COLOR_CODE"
-
-echo
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-printf '\033[0m'
-
-echo
-EOF
-
-chmod 755 "$BASE/banner"
-
-# ============================================================
-# SYSTEM INFO
-# ============================================================
-
-cat > "$BASE/sysinfo" <<'EOF'
+# 1. banner command
+cat << 'EOF' > "$BIN_DIR/banner"
 #!/data/data/com.termux/files/usr/bin/bash
+CONFIG_FILE="$HOME/.jihad-termux/config.env"
+RENDER_SCRIPT="$HOME/.jihad-termux/ascii_render.sh"
 
-echo
-echo "╔════════════════════════════════════════════════╗"
-echo "║             SYSTEM INFORMATION                ║"
-echo "╠════════════════════════════════════════════════╣"
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+else
+    BANNER_NAME="JIHAD BHAI"
+    COLOR_CODE="1"
+fi
 
-printf "║ Date   : %-37s║\n" "$(date '+%Y-%m-%d')"
-printf "║ Time   : %-37s║\n" "$(date '+%H:%M:%S')"
-printf "║ User   : %-37s║\n" "$(whoami)"
-printf "║ Shell  : %-37s║\n" "$SHELL"
-printf "║ Host   : %-37s║\n" "$(hostname 2>/dev/null || echo Android)"
+get_color_code() {
+    case "$1" in
+        1|Green)       echo "\033[1;32m" ;;
+        2|Red)         echo "\033[1;31m" ;;
+        3|Blue)        echo "\033[1;34m" ;;
+        4|Yellow)      echo "\033[1;33m" ;;
+        5|Purple)      echo "\033[1;35m" ;;
+        6|Cyan)        echo "\033[1;36m" ;;
+        7|White)       echo "\033[1;37m" ;;
+        8|Orange)      echo "\033[38;5;208m" ;;
+        9|Pink)        echo "\033[38;5;205m" ;;
+        10|LightBlue)  echo "\033[38;5;117m" ;;
+        *)             echo "\033[1;32m" ;;
+    esac
+}
 
-echo "╚════════════════════════════════════════════════╝"
-echo
+COLOR=$(get_color_code "$COLOR_CODE")
+NC="\033[0m"
+
+echo -e "$COLOR"
+"$RENDER_SCRIPT" "$BANNER_NAME"
+echo -e "$NC"
 EOF
+chmod 755 "$BIN_DIR/banner"
 
-chmod 755 "$BASE/sysinfo"
-
-# ============================================================
-# MATRIX
-# ============================================================
-
-cat > "$BASE/matrix" <<'EOF'
+# 2. sysinfo command
+cat << 'EOF' > "$BIN_DIR/sysinfo"
 #!/data/data/com.termux/files/usr/bin/bash
+echo -e "\033[1;36m================ SYSTEM INFO ================\033[0m"
+echo -e "\033[1;33mDevice Model : \033[0m$(getprop ro.product.model 2>/dev/null || echo 'Unknown')"
+echo -e "\033[1;33mAndroid Ver  : \033[0m$(getprop ro.build.version.release 2>/dev/null || echo 'Unknown')"
+echo -e "\033[1;33mArchitecture : \033[0m$(uname -m)"
+echo -e "\033[1;33mKernel Ver   : \033[0m$(uname -r)"
+echo -e "\033[1;33mStorage Info : \033[0m$(df -h /data 2>/dev/null | tail -n1 | awk '{print $3 "/" $2 " used (" $5 ")"}')"
+echo -e "\033[1;33mUptime       : \033[0m$(uptime -p 2>/dev/null || uptime)"
+echo -e "\033[1;36m=============================================\033[0m"
+EOF
+chmod 755 "$BIN_DIR/sysinfo"
 
+# 3. matrix command
+cat << 'EOF' > "$BIN_DIR/matrix"
+#!/data/data/com.termux/files/usr/bin/bash
 cmatrix
 EOF
+chmod 755 "$BIN_DIR/matrix"
 
-chmod 755 "$BASE/matrix"
-
-# ============================================================
-# OWNER PANEL
-# ============================================================
-
-echo "🔐 Installing protected Owner Panel..."
-
-cat > "$BASE/owner" <<'EOF'
+# 4. owner command (Owner Control Panel)
+cat << 'EOF' > "$BIN_DIR/owner"
 #!/data/data/com.termux/files/usr/bin/bash
+CONFIG_FILE="$HOME/.jihad-termux/config.env"
+RENDER_SCRIPT="$HOME/.jihad-termux/ascii_render.sh"
 
-BASE="$HOME/.jihad-termux"
-
-CONFIG="$BASE/config"
-HASH_FILE="$BASE/.owner_pin_hash"
-COLOR_FILE="$BASE/.banner_color"
-
-echo
-echo "╔════════════════════════════════════════════════╗"
-echo "║               🔐 OWNER LOGIN                 ║"
-echo "╚════════════════════════════════════════════════╝"
-echo
-
-read -r -s -p "🔑 Owner PIN: " ENTERED_PIN
-
-echo
-
-INPUT_HASH=$(printf '%s' "$ENTERED_PIN" | sha256sum | awk '{print $1}')
-
-unset ENTERED_PIN
-
-STORED_HASH=$(cat "$HASH_FILE")
-
-if [ "$INPUT_HASH" != "$STORED_HASH" ]; then
-
-    unset INPUT_HASH
-    unset STORED_HASH
-
-    echo
-    echo "❌ ACCESS DENIED"
-    echo
-
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "Configuration missing! Please reinstall."
     exit 1
 fi
 
-unset INPUT_HASH
-unset STORED_HASH
+source "$CONFIG_FILE"
 
-echo
-echo "✅ ACCESS GRANTED"
-echo
+# Authenticate PIN
+read -sp "Enter Owner PIN: " ENTERED_PIN
+echo ""
+
+ENTERED_HASH=$(echo -n "$ENTERED_PIN" | openssl dgst -sha256 | awk '{print $NF}')
+
+if [ "$ENTERED_HASH" != "$PIN_HASH" ]; then
+    echo -e "\033[1;31m[✘] Access Denied: Incorrect PIN!\033[0m"
+    exit 1
+fi
+
+echo -e "\033[1;32m[✓] Access Granted!\033[0m"
+sleep 1
 
 while true; do
+    clear
+    echo -e "\033[1;35m╔════════════════════════════════════════════════╗\033[0m"
+    echo -e "\033[1;35m║             👑 OWNER CONTROL PANEL             ║\033[0m"
+    echo -e "\033[1;35m╠════════════════════════════════════════════════╣\033[0m"
+    echo -e "\033[1;35m║ [1] Change Banner Name                         ║\033[0m"
+    echo -e "\033[1;35m║ [2] Change Telegram                            ║\033[0m"
+    echo -e "\033[1;35m║ [3] Change Banner Color                        ║\033[0m"
+    echo -e "\033[1;35m║ [4] Preview Banner                             ║\033[0m"
+    echo -e "\033[1;35m║ [5] Reset Banner                               ║\033[0m"
+    echo -e "\033[1;35m║ [0] Exit                                       ║\033[0m"
+    echo -e "\033[1;35m╚════════════════════════════════════════════════╝\033[0m"
+    read -p "Select Option: " OPT
 
-echo "╔════════════════════════════════════════════════╗"
-echo "║           👑 OWNER CONTROL PANEL             ║"
-echo "╠════════════════════════════════════════════════╣"
-echo "║ [1] Change Banner Name                        ║"
-echo "║ [2] Change Telegram                           ║"
-echo "║ [3] Change Banner Color                       ║"
-echo "║ [4] Preview Banner                            ║"
-echo "║ [5] Reset Banner                              ║"
-echo "║ [0] Exit                                      ║"
-echo "╚════════════════════════════════════════════════╝"
-echo
-
-read -r -p "Select Option: " OPTION
-
-case "$OPTION" in
-
-1)
-
-    read -r -p "Enter New Banner Name: " NEW_NAME
-
-    if [ -n "$NEW_NAME" ]; then
-
-        TMP="$CONFIG.tmp"
-
-        awk -v n="$NEW_NAME" '
-        BEGIN {
-            gsub(/"/, "\\\"", n)
-        }
-
-        /^OWNER_NAME=/ {
-            print "OWNER_NAME=\"" n "\""
-            next
-        }
-
-        {print}
-        ' "$CONFIG" > "$TMP"
-
-        mv "$TMP" "$CONFIG"
-
-        chmod 600 "$CONFIG"
-
-        echo
-        echo "✅ Banner Name Updated."
-
-    fi
-
-;;
-
-2)
-
-    read -r -p "Enter New Telegram: " NEW_TG
-
-    if [ -n "$NEW_TG" ]; then
-
-        TMP="$CONFIG.tmp"
-
-        awk -v n="$NEW_TG" '
-        BEGIN {
-            gsub(/"/, "\\\"", n)
-        }
-
-        /^TELEGRAM=/ {
-            print "TELEGRAM=\"" n "\""
-            next
-        }
-
-        {print}
-        ' "$CONFIG" > "$TMP"
-
-        mv "$TMP" "$CONFIG"
-
-        chmod 600 "$CONFIG"
-
-        echo
-        echo "✅ Telegram Updated."
-
-    fi
-
-;;
-
-3)
-
-    echo
-    echo "╔════════════════════════════════════════════════╗"
-    echo "║                 🎨 COLORS                    ║"
-    echo "╠════════════════════════════════════════════════╣"
-    echo "║ [1]  Green                                    ║"
-    echo "║ [2]  Red                                      ║"
-    echo "║ [3]  Blue                                     ║"
-    echo "║ [4]  Yellow                                   ║"
-    echo "║ [5]  Purple                                   ║"
-    echo "║ [6]  Cyan                                     ║"
-    echo "║ [7]  White                                    ║"
-    echo "║ [8]  Orange                                   ║"
-    echo "║ [9]  Pink                                     ║"
-    echo "║ [10] Light Blue                               ║"
-    echo "║ [0]  Cancel                                   ║"
-    echo "╚════════════════════════════════════════════════╝"
-    echo
-
-    read -r -p "Choose Color: " COLOR
-
-    case "$COLOR" in
-
-    1)
-        CODE="1;32"
-        NAME="Green"
-    ;;
-
-    2)
-        CODE="1;31"
-        NAME="Red"
-    ;;
-
-    3)
-        CODE="1;34"
-        NAME="Blue"
-    ;;
-
-    4)
-        CODE="1;33"
-        NAME="Yellow"
-    ;;
-
-    5)
-        CODE="1;35"
-#!/data/data/com.termux/files/usr/bin/bash
-
-BASE="$HOME/.jihad-termux"
-CONFIG="$BASE/config"
-HASH_FILE="$BASE/.owner_pin_hash"
-COLOR_FILE="$BASE/.banner_color"
-
-echo
-echo "╔════════════════════════════════════════════════╗"
-echo "║               🔐 OWNER LOGIN                 ║"
-echo "╚════════════════════════════════════════════════╝"
-echo
-
-read -r -s -p "🔑 Owner PIN: " ENTERED_PIN
-echo
-
-INPUT_HASH=$(printf '%s' "$ENTERED_PIN" | sha256sum | awk '{print $1}')
-unset ENTERED_PIN
-
-if [ ! -f "$HASH_FILE" ]; then
-    echo "❌ PIN HASH FILE NOT FOUND"
-    exit 1
-fi
-
-STORED_HASH=$(cat "$HASH_FILE")
-
-if [ "$INPUT_HASH" != "$STORED_HASH" ]; then
-    unset INPUT_HASH STORED_HASH
-    echo
-    echo "❌ ACCESS DENIED"
-    exit 1
-fi
-
-unset INPUT_HASH STORED_HASH
-
-echo
-echo "✅ ACCESS GRANTED"
-echo
-
-while true
-do
-
-    echo "╔════════════════════════════════════════════════╗"
-    echo "║           👑 OWNER CONTROL PANEL             ║"
-    echo "╠════════════════════════════════════════════════╣"
-    echo "║ [1] Change Banner Name                        ║"
-    echo "║ [2] Change Telegram                           ║"
-    echo "║ [3] Change Banner Color                       ║"
-    echo "║ [4] Preview Banner                            ║"
-    echo "║ [5] Reset Banner                              ║"
-    echo "║ [0] Exit                                      ║"
-    echo "╚════════════════════════════════════════════════╝"
-    echo
-
-    read -r -p "Select Option: " OPTION
-
-    case "$OPTION" in
-
+    case "$OPT" in
         1)
-            echo
-            read -r -p "Enter New Banner Name: " NEW_NAME
-
-            if [ -z "$NEW_NAME" ]; then
-                echo "❌ Name cannot be empty."
-                continue
+            read -p "Enter New Banner Name: " NEW_NAME
+            NEW_NAME=$(echo "$NEW_NAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+            if [ -n "$NEW_NAME" ]; then
+                BANNER_NAME="$NEW_NAME"
+                sed -i "s/^BANNER_NAME=.*/BANNER_NAME=\"$BANNER_NAME\"/" "$CONFIG_FILE"
+                echo -e "\033[1;32m[✓] Banner Name updated successfully!\033[0m"
             fi
-
-            sed -i "s/^OWNER_NAME=.*/OWNER_NAME=\"$NEW_NAME\"/" "$CONFIG"
-
-            echo
-            echo "✅ Banner Name Updated."
-            echo "➡ New Name: $NEW_NAME"
+            sleep 1.5
             ;;
-
         2)
-            echo
-            read -r -p "Enter New Telegram: " NEW_TG
-
-            if [ -z "$NEW_TG" ]; then
-                echo "❌ Telegram cannot be empty."
-                continue
+            read -p "Enter New Telegram Handle: " NEW_TG
+            if [ -n "$NEW_TG" ]; then
+                TELEGRAM="$NEW_TG"
+                sed -i "s/^TELEGRAM=.*/TELEGRAM=\"$TELEGRAM\"/" "$CONFIG_FILE"
+                echo -e "\033[1;32m[✓] Telegram handle updated!\033[0m"
             fi
-
-            sed -i "s/^TELEGRAM=.*/TELEGRAM=\"$NEW_TG\"/" "$CONFIG"
-
-            echo
-            echo "✅ Telegram Updated."
+            sleep 1.5
             ;;
-
         3)
-            echo
-            echo "╔════════════════════════════════════════════════╗"
-            echo "║                 🎨 COLORS                    ║"
-            echo "╠════════════════════════════════════════════════╣"
-            echo "║ [1]  🟢 Green                                ║"
-            echo "║ [2]  🔴 Red                                  ║"
-            echo "║ [3]  🔵 Blue                                 ║"
-            echo "║ [4]  🟡 Yellow                               ║"
-            echo "║ [5]  🟣 Purple                               ║"
-            echo "║ [6]  🔷 Cyan                                 ║"
-            echo "║ [7]  ⚪ White                                ║"
-            echo "║ [8]  🟠 Orange                               ║"
-            echo "║ [9]  🌸 Pink                                 ║"
-            echo "║ [10] 💙 Light Blue                           ║"
-            echo "║ [0]  Cancel                                  ║"
-            echo "╚════════════════════════════════════════════════╝"
-            echo
-
-            read -r -p "Choose Color: " COLOR
-
-            case "$COLOR" in
-
-                1)
-                    CODE="1;32"
-                    NAME="Green"
-                    ;;
-
-                2)
-                    CODE="1;31"
-                    NAME="Red"
-                    ;;
-
-                3)
-                    CODE="1;34"
-                    NAME="Blue"
-                    ;;
-
-                4)
-                    CODE="1;33"
-                    NAME="Yellow"
-                    ;;
-
-                5)
-                    CODE="1;35"
-                    NAME="Purple"
-                    ;;
-
-                6)
-                    CODE="1;36"
-                    NAME="Cyan"
-                    ;;
-
-                7)
-                    CODE="1;37"
-                    NAME="White"
-                    ;;
-
-                8)
-                    CODE="38;5;208"
-                    NAME="Orange"
-                    ;;
-
-                9)
-                    CODE="38;5;213"
-                    NAME="Pink"
-                    ;;
-
-                10)
-                    CODE="38;5;117"
-                    NAME="Light Blue"
-                    ;;
-
-                0)
-                    continue
-                    ;;
-
-                *)
-                    echo "❌ Invalid color."
-                    continue
-                    ;;
-
-            esac
-
-            printf '%s\n' "$CODE" > "$COLOR_FILE"
-
-            chmod 600 "$COLOR_FILE"
-
-            echo
-            echo "✅ Banner color changed to: $NAME"
+            clear
+            echo "Select Color:"
+            echo "1. Green       2. Red        3. Blue       4. Yellow"
+            echo "5. Purple      6. Cyan       7. White      8. Orange"
+            echo "9. Pink        10. Light Blue"
+            read -p "Color Number (1-10): " COLOR_OPT
+            if [[ "$COLOR_OPT" =~ ^[1-9]$|^10$ ]]; then
+                COLOR_CODE="$COLOR_OPT"
+                sed -i "s/^COLOR_CODE=.*/COLOR_CODE=\"$COLOR_CODE\"/" "$CONFIG_FILE"
+                echo -e "\033[1;32m[✓] Color updated!\033[0m"
+            else
+                echo -e "\033[1;31mInvalid Selection!\033[0m"
+            fi
+            sleep 1.5
             ;;
-
         4)
-            echo
-            "$BASE/banner"
+            clear
+            banner
+            read -p "Press Enter to return..."
             ;;
-
         5)
-            cat > "$CONFIG" <<'CONFIGEOF'
-OWNER_NAME="JIHAD BHAI"
-TELEGRAM="@TEAM_XBD1M"
-CONFIGEOF
-
-            printf '1;32\n' > "$COLOR_FILE"
-
-            chmod 600 "$CONFIG"
-            chmod 600 "$COLOR_FILE"
-
-            echo
-            echo "✅ Banner reset successfully."
+            BANNER_NAME="JIHAD BHAI"
+            TELEGRAM="@TEAM_XBD1M"
+            COLOR_CODE="1"
+            sed -i "s/^BANNER_NAME=.*/BANNER_NAME=\"$BANNER_NAME\"/" "$CONFIG_FILE"
+            sed -i "s/^TELEGRAM=.*/TELEGRAM=\"$TELEGRAM\"/" "$CONFIG_FILE"
+            sed -i "s/^COLOR_CODE=.*/COLOR_CODE=\"$COLOR_CODE\"/" "$CONFIG_FILE"
+            echo -e "\033[1;32m[✓] Banner configuration reset to defaults!\033[0m"
+            sleep 1.5
             ;;
-
         0)
-            echo
-            echo "👋 Owner Panel Closed."
-            exit 0
+            break
             ;;
-
         *)
-            echo
-            echo "❌ Invalid option."
+            echo -e "\033[1;31mInvalid option!\033[0m"
+            sleep 1
             ;;
-
     esac
-
-    echo
-
 done
 EOF
+chmod 755 "$BIN_DIR/owner"
 
-chmod 700 "$BASE/owner"
+# ------------------------------------------------------------------------------
+# Auto Run in ZSH Startup Setup
+# ------------------------------------------------------------------------------
+ZSHRC="$HOME/.zshrc"
+touch "$ZSHRC"
 
-# ============================================================
-# INSTALL COMMANDS
-# ============================================================
+if ! grep -q "# JIHAD BHAI BANNER START" "$ZSHRC"; then
+    cat << 'EOF' >> "$ZSHRC"
 
-echo "⚙️ Installing commands..."
-
-mkdir -p "$PREFIX/bin"
-
-ln -sf "$BASE/banner" "$PREFIX/bin/banner"
-ln -sf "$BASE/owner" "$PREFIX/bin/owner"
-ln -sf "$BASE/sysinfo" "$PREFIX/bin/sysinfo"
-ln -sf "$BASE/matrix" "$PREFIX/bin/matrix"
-
-# ============================================================
-# ZSH AUTO START
-# ============================================================
-
-touch "$HOME/.zshrc"
-
-if ! grep -q "jihad-termux/banner" "$HOME/.zshrc" 2>/dev/null; then
-
-cat >> "$HOME/.zshrc" <<'EOF'
-
-# JIHAD BHAI MASTER TERMUX
-if [ -t 1 ]; then
-    "$HOME/.jihad-termux/banner"
+# JIHAD BHAI BANNER START
+if [ -x "$PREFIX/bin/banner" ]; then
+    banner
 fi
+# JIHAD BHAI BANNER END
 EOF
-
 fi
 
-# ============================================================
-# FINISH
-# ============================================================
+# ------------------------------------------------------------------------------
+# Final Output Display
+# ------------------------------------------------------------------------------
+load_config
 
-echo
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "             ✅ INSTALLATION COMPLETE"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo
-echo "👑 OWNER     : JIHAD BHAI"
-echo "✈ TELEGRAM  : @TEAM_XBD1M"
-echo "🔐 PIN       : SHA-256 protected"
-echo "🟢 DEFAULT   : GREEN"
-echo "🎨 COLORS    : 10"
-echo
-echo "Commands:"
+clear
+echo -e "\033[1;32m╔════════════════════════════════════════════════╗\033[0m"
+echo -e "\033[1;32m║       ✅ INSTALLATION COMPLETE                ║\033[0m"
+echo -e "\033[1;32m╚════════════════════════════════════════════════╝\033[0m"
+echo ""
+echo -e "🎨 Banner: \033[1;36m$BANNER_NAME\033[0m"
+echo -e "👑 Owner : \033[1;33m$DEFAULT_OWNER\033[0m"
+echo -e "📱 Telegram: \033[1;34m$TELEGRAM\033[0m"
+echo ""
+echo -e "\033[1;35mCommands:\033[0m"
 echo "  banner"
 echo "  owner"
 echo "  sysinfo"
 echo "  matrix"
-echo
-echo "🚀 Starting..."
-echo
-
-sleep 1
-
-"$BASE/banner"
+echo ""
+echo -e "\033[1;32mRun:\033[0m"
+echo "  zsh"
