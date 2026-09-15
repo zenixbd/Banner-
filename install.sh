@@ -4,95 +4,277 @@ set -e
 BASE="$HOME/.jihad-termux"
 CONFIG="$BASE/config"
 HASH_FILE="$BASE/.owner_pin_hash"
-
-OWNER_NAME="JIHAD BHAI"
-TELEGRAM="@TEAM_XBD1M"
+DEFAULT_OWNER="JIHAD BHAI"
+DEFAULT_TELEGRAM="@TEAM_XBD1M"
+OWNER_PIN="25535"
 
 mkdir -p "$BASE"
 chmod 700 "$BASE"
 
-clear
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "        JIHAD BHAI MASTER TERMUX"
-echo "          SECURE INSTALLER"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo
+# ---------- Dynamic thick ASCII banner renderer ----------
+cat > "$BASE/render_banner" <<'RENDER'
+#!/data/data/com.termux/files/usr/bin/bash
+BASE="$HOME/.jihad-termux"
+source "$BASE/config" 2>/dev/null || true
 
-pkg update -y
-pkg install -y coreutils git zsh curl ncurses-utils cmatrix
+declare -A A
+A[A]=' █████╗
+██╔══██╗
+███████║
+██╔══██║
+██║  ██║'
+A[B]='██████╗
+██╔══██╗
+██████╔╝
+██╔══██╗
+██████╔╝'
+A[C]=' ██████╗
+██╔════╝
+██║
+██║
+╚██████╗'
+A[D]='██████╗
+██╔══██╗
+██║  ██║
+██║  ██║
+██████╔╝'
+A[E]='███████╗
+██╔════╝
+█████╗
+██╔════╝
+███████╗'
+A[F]='███████╗
+██╔════╝
+█████╗
+██╔════╝
+██║'
+A[G]=' ██████╗
+██╔════╝
+██║  ███╗
+██║   ██║
+╚██████╔╝'
+A[H]='██╗  ██╗
+██║  ██║
+███████║
+██╔══██║
+██║  ██║'
+A[I]='██╗
+██║
+██║
+██║
+██║'
+A[J]='     ██╗
+     ██║
+     ██║
+██   ██║
+╚█████╔╝'
+A[K]='██╗  ██╗
+██║ ██╔╝
+█████╔╝
+██╔═██╗
+██║  ██╗'
+A[L]='██╗
+██║
+██║
+██║
+███████╗'
+A[M]='███╗   ███╗
+████╗ ████║
+██╔████╔██║
+██║╚██╔╝██║
+██║ ╚═╝ ██║'
+A[N]='███╗   ██╗
+████╗  ██║
+██╔██╗ ██║
+██║╚██╗██║
+██║ ╚████║'
+A[O]=' ██████╗
+██╔═══██╗
+██║   ██║
+██║   ██║
+╚██████╔╝'
+A[P]='██████╗
+██╔══██╗
+██████╔╝
+██╔═══╝
+██║'
+A[Q]=' ██████╗
+██╔═══██╗
+██║   ██║
+██║▄▄ ██║
+╚██████╔╝'
+A[R]='██████╗
+██╔══██╗
+██████╔╝
+██╔══██╗
+██║  ██║'
+A[S]='███████╗
+██╔════╝
+███████╗
+╚════██║
+███████║'
+A[T]='████████╗
+╚══██╔══╝
+   ██║
+   ██║
+   ██║'
+A[U]='██╗   ██╗
+██║   ██║
+██║   ██║
+██║   ██║
+╚██████╔╝'
+A[V]='██╗   ██╗
+██║   ██║
+██║   ██║
+╚██╗ ██╔╝
+ ╚████╔╝'
+A[W]='██╗    ██╗
+██║    ██║
+██║ █╗ ██║
+██║███╗██║
+╚███╔███╔╝'
+A[X]='██╗  ██╗
+╚██╗██╔╝
+ ╚███╔╝
+ ██╔██╗
+██╔╝ ██╗'
+A[Y]='██╗   ██╗
+╚██╗ ██╔╝
+ ╚████╔╝
+  ╚██╔╝
+   ██║'
+A[Z]='███████╗
+╚════██║
+   ███╔╝
+ ██╔╝
+███████╗'
 
-if [ ! -f "$HASH_FILE" ]; then
-    echo "🔐 Create your Owner PIN"
-    echo "PIN will not be saved as plain text."
-    echo
-    while true; do
-        read -r -s -p "Enter new Owner PIN: " PIN1
-        echo
-        read -r -s -p "Confirm Owner PIN: " PIN2
-        echo
+# Numbers / common symbols
+A[0]=' ██████╗
+██╔═████╗
+██║██╔██║
+████╔╝██║
+╚██████╔╝'
+A[1]=' ██╗
+███║
+╚██║
+ ██║
+ ██║'
+A[2]='██████╗
+╚════██╗
+ █████╔╝
+██╔═══╝
+███████╗'
+A[3]='██████╗
+╚════██╗
+ █████╔╝
+╚════██╗
+██████╔╝'
+A[4]='██╗  ██╗
+██║  ██║
+███████║
+╚════██║
+     ██║'
+A[5]='███████╗
+██╔════╝
+███████╗
+╚════██║
+███████║'
+A[6]=' ██████╗
+██╔════╝
+███████╗
+██╔══██║
+╚██████╔╝'
+A[7]='███████╗
+╚════██║
+    ██╔╝
+   ██╔╝
+   ██║'
+A[8]=' █████╗
+██╔══██╗
+╚█████╔╝
+██╔══██╗
+╚█████╔╝'
+A[9]=' █████╗
+██╔══██╗
+╚██████║
+╚════██║
+██████╔╝'
+A[' ']='
 
-        if [ -z "$PIN1" ]; then
-            echo "❌ PIN cannot be empty."
-            continue
+
+
+ '
+
+NAME="${OWNER_NAME:-JIHAD BHAI}"
+NAME=$(printf '%s' "$NAME" | tr '[:lower:]' '[:upper:]')
+
+for ((row=0; row<5; row++)); do
+    line=""
+    for ((i=0; i<${#NAME}; i++)); do
+        ch="${NAME:i:1}"
+        block="${A[$ch]}"
+        if [ -z "$block" ]; then
+            block=' '
         fi
-
-        if [ "$PIN1" != "$PIN2" ]; then
-            echo "❌ PINs do not match."
-            continue
-        fi
-
-        printf '%s' "$PIN1" | sha256sum | awk '{print $1}' > "$HASH_FILE"
-        unset PIN1 PIN2
-        chmod 600 "$HASH_FILE"
-        echo "✅ Owner PIN securely configured."
-        break
+        part=$(printf '%s\n' "$block" | sed -n "$((row+1))p")
+        line+="${part:- }  "
     done
-else
-    echo "✅ Existing Owner PIN detected."
+    printf '%s\n' "$line"
+done
+RENDER
+chmod 700 "$BASE/render_banner"
+
+# ---------- First install: create secure hash ----------
+if [ ! -f "$HASH_FILE" ]; then
+    printf '%s' "$OWNER_PIN" | sha256sum | awk '{print $1}' > "$HASH_FILE"
+    chmod 600 "$HASH_FILE"
 fi
 
 cat > "$CONFIG" <<EOF
-OWNER_NAME="$OWNER_NAME"
-TELEGRAM="$TELEGRAM"
+OWNER_NAME="$DEFAULT_OWNER"
+TELEGRAM="$DEFAULT_TELEGRAM"
 EOF
 chmod 600 "$CONFIG"
 
+# ---------- Banner command ----------
 cat > "$BASE/banner" <<'BANNER'
 #!/data/data/com.termux/files/usr/bin/bash
 BASE="$HOME/.jihad-termux"
-[ -f "$BASE/config" ] && source "$BASE/config"
+source "$BASE/config"
+
 clear
 echo
-echo "╔══════════════════════════════════════════════════╗"
-echo "║                                                  ║"
-printf "║              %-32s║\n" "$OWNER_NAME"
-echo "║                                                  ║"
-echo "║              MASTER TERMUX                      ║"
-echo "║                                                  ║"
-echo "╠══════════════════════════════════════════════════╣"
-printf "║  TELEGRAM : %-36s║\n" "$TELEGRAM"
-echo "║                                                  ║"
-echo "║  STATUS   : ● ONLINE                             ║"
-echo "║  SHELL    : ZSH                                  ║"
-echo "║                                                  ║"
-echo "╚══════════════════════════════════════════════════╝"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo
+"$BASE/render_banner"
+echo
+echo "                 ✦ MASTER TERMUX ✦"
+echo
+echo "  👑 OWNER     : $OWNER_NAME"
+echo "  ✈ TELEGRAM  : $TELEGRAM"
+echo "  ● STATUS     : ONLINE"
+echo "  ◈ SHELL      : ZSH"
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo
 BANNER
 chmod 755 "$BASE/banner"
 
-cat > "$BASE/sysinfo" <<'SYSINFO'
+# ---------- System info ----------
+cat > "$BASE/sysinfo" <<'SYS'
 #!/data/data/com.termux/files/usr/bin/bash
 echo
-echo "╔════════════════════════════════════════╗"
-echo "║          SYSTEM INFORMATION            ║"
-echo "╠════════════════════════════════════════╣"
-printf "║ Date     : %-26s║\n" "$(date '+%Y-%m-%d')"
-printf "║ Time     : %-26s║\n" "$(date '+%H:%M:%S')"
-printf "║ User     : %-26s║\n" "$(whoami)"
-printf "║ Shell    : %-26s║\n" "$SHELL"
-echo "╚════════════════════════════════════════╝"
+echo "╔════════════════════════════════════════════╗"
+echo "║             SYSTEM INFORMATION             ║"
+echo "╠════════════════════════════════════════════╣"
+printf "║ Date     : %-31s║\n" "$(date '+%Y-%m-%d')"
+printf "║ Time     : %-31s║\n" "$(date '+%H:%M:%S')"
+printf "║ User     : %-31s║\n" "$(whoami)"
+printf "║ Shell    : %-31s║\n" "$SHELL"
+echo "╚════════════════════════════════════════════╝"
 echo
-SYSINFO
+SYS
 chmod 755 "$BASE/sysinfo"
 
 cat > "$BASE/matrix" <<'MATRIX'
@@ -101,74 +283,85 @@ cmatrix
 MATRIX
 chmod 755 "$BASE/matrix"
 
+# ---------- Secure owner panel ----------
 cat > "$BASE/owner" <<'OWNER'
 #!/data/data/com.termux/files/usr/bin/bash
 BASE="$HOME/.jihad-termux"
-HASH_FILE="$BASE/.owner_pin_hash"
 CONFIG="$BASE/config"
+HASH_FILE="$BASE/.owner_pin_hash"
 
-[ -f "$HASH_FILE" ] || { echo "❌ Owner PIN is not configured."; exit 1; }
-source "$CONFIG"
+chmod 600 "$CONFIG" "$HASH_FILE" 2>/dev/null || true
 
 echo
-echo "╔════════════════════════════════════════╗"
-echo "║          🔐 OWNER AUTHENTICATION       ║"
-echo "╚════════════════════════════════════════╝"
+echo "╔════════════════════════════════════════════╗"
+echo "║          🔐 OWNER AUTHENTICATION           ║"
+echo "╚════════════════════════════════════════════╝"
 echo
 
-read -r -s -p "🔑 Owner PIN: " ENTERED_PIN
+read -r -s -p "🔑 Owner PIN: " PIN
 echo
-ENTERED_HASH=$(printf '%s' "$ENTERED_PIN" | sha256sum | awk '{print $1}')
-unset ENTERED_PIN
+
+INPUT_HASH=$(printf '%s' "$PIN" | sha256sum | awk '{print $1}')
+unset PIN
 STORED_HASH=$(cat "$HASH_FILE")
 
-if [ "$ENTERED_HASH" != "$STORED_HASH" ]; then
-    unset ENTERED_HASH STORED_HASH
+if [ "$INPUT_HASH" != "$STORED_HASH" ]; then
+    unset INPUT_HASH STORED_HASH
     echo "❌ Access Denied"
     exit 1
 fi
 
-unset ENTERED_HASH STORED_HASH
+unset INPUT_HASH STORED_HASH
 echo "✅ Access Granted"
 echo
 
 while true; do
-    echo "╔════════════════════════════════════════╗"
-    echo "║          👑 OWNER CONTROL PANEL       ║"
-    echo "╠════════════════════════════════════════╣"
-    echo "║ [1] Change Banner Name                ║"
-    echo "║ [2] Change Telegram                   ║"
-    echo "║ [3] Show Configuration                ║"
-    echo "║ [4] Reset Banner                      ║"
-    echo "║ [0] Exit                              ║"
-    echo "╚════════════════════════════════════════╝"
+    echo "╔════════════════════════════════════════════╗"
+    echo "║             👑 OWNER PANEL                 ║"
+    echo "╠════════════════════════════════════════════╣"
+    echo "║ [1] Change Banner Name                    ║"
+    echo "║ [2] Change Telegram                       ║"
+    echo "║ [3] Preview Banner                        ║"
+    echo "║ [4] Reset Owner Banner                    ║"
+    echo "║ [0] Exit                                  ║"
+    echo "╚════════════════════════════════════════════╝"
     echo
-    read -r -p "Select: " OPTION
+    read -r -p "Select: " OPT
 
-    case "$OPTION" in
+    case "$OPT" in
         1)
-            read -r -p "New Banner Name: " NEW_NAME
+            read -r -p "New name: " NEW_NAME
             if [ -n "$NEW_NAME" ]; then
-                sed -i "s/^OWNER_NAME=.*/OWNER_NAME=\"$NEW_NAME\"/" "$CONFIG"
-                echo "✅ Banner name updated."
+                # Safe replacement for the simple config format
+                awk -v n="$NEW_NAME" 'BEGIN{gsub(/"/,"\\\"",n)}
+                    /^OWNER_NAME=/ {print "OWNER_NAME=\"" n "\""; next}
+                    {print}' "$CONFIG" > "$CONFIG.tmp"
+                mv "$CONFIG.tmp" "$CONFIG"
+                chmod 600 "$CONFIG"
+                echo "✅ Name changed. It will automatically render in thick ASCII."
             fi
             ;;
         2)
-            read -r -p "New Telegram: " NEW_TELEGRAM
-            if [ -n "$NEW_TELEGRAM" ]; then
-                sed -i "s/^TELEGRAM=.*/TELEGRAM=\"$NEW_TELEGRAM\"/" "$CONFIG"
-                echo "✅ Telegram updated."
+            read -r -p "New Telegram: " NEW_TG
+            if [ -n "$NEW_TG" ]; then
+                awk -v n="$NEW_TG" 'BEGIN{gsub(/"/,"\\\"",n)}
+                    /^TELEGRAM=/ {print "TELEGRAM=\"" n "\""; next}
+                    {print}' "$CONFIG" > "$CONFIG.tmp"
+                mv "$CONFIG.tmp" "$CONFIG"
+                chmod 600 "$CONFIG"
+                echo "✅ Telegram changed."
             fi
             ;;
         3)
-            echo
-            cat "$CONFIG"
-            echo
+            "$BASE/banner"
             ;;
         4)
-            sed -i 's/^OWNER_NAME=.*/OWNER_NAME="JIHAD BHAI"/' "$CONFIG"
-            sed -i 's/^TELEGRAM=.*/TELEGRAM="@TEAM_XBD1M"/' "$CONFIG"
-            echo "✅ Banner reset."
+            cat > "$CONFIG" <<EOF
+OWNER_NAME="JIHAD BHAI"
+TELEGRAM="@TEAM_XBD1M"
+EOF
+            chmod 600 "$CONFIG"
+            echo "✅ Owner banner reset."
             ;;
         0)
             exit 0
@@ -182,12 +375,14 @@ done
 OWNER
 chmod 700 "$BASE/owner"
 
+# ---------- Commands ----------
 mkdir -p "$PREFIX/bin"
 ln -sf "$BASE/banner" "$PREFIX/bin/banner"
 ln -sf "$BASE/owner" "$PREFIX/bin/owner"
 ln -sf "$BASE/sysinfo" "$PREFIX/bin/sysinfo"
 ln -sf "$BASE/matrix" "$PREFIX/bin/matrix"
 
+# ---------- ZSH ----------
 touch "$HOME/.zshrc"
 if ! grep -q 'jihad-termux/banner' "$HOME/.zshrc" 2>/dev/null; then
 cat >> "$HOME/.zshrc" <<'ZSH'
@@ -200,78 +395,16 @@ ZSH
 fi
 
 echo
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "        ✅ INSTALLATION COMPLETE"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "             ✅ SECURE INSTALL COMPLETE"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo
-echo "Commands: banner | owner | sysinfo | matrix"
+echo "Commands:"
+echo "  banner   → Thick dynamic banner"
+echo "  owner    → Protected Owner Panel"
+echo "  sysinfo  → System information"
+echo "  matrix   → Matrix effect"
 echo
+echo "Owner PIN: configured securely as a hash."
 echo "Restart Termux or run: zsh"
 echo
-YLE="%s"\nBANNER_COLOR="%s"\n' "$OWNER_NAME" "$TELEGRAM" "$OWNER_PIN" "$BANNER_STYLE" "$BANNER_COLOR" > "$HOME/.jihad-termux/config" ;;
-0) exit ;;
-esac
-done
-EOF
-
-cat > "$BASE/sysinfo" <<'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-echo "╭──────── SYSTEM INFORMATION ────────╮"
-echo "│ Kernel : $(uname -r)"
-echo "│ Arch   : $(uname -m)"
-echo "│ Shell  : $SHELL"
-echo "│ Time   : $(date '+%H:%M:%S')"
-echo "╰─────────────────────────────────────╯"
-EOF
-
-cat > "$BASE/matrix" <<'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-command -v cmatrix >/dev/null 2>&1 && cmatrix -C green || echo "Install cmatrix first."
-EOF
-
-cat > "$BASE/prompts" <<'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-echo "╭──────── PROMPT CENTER ────────╮"
-echo "│ 01 Neon Core                  │"
-echo "│ 02 Cyber HUD                  │"
-echo "│ 03 Classic Terminal           │"
-echo "╰───────────────────────────────╯"
-EOF
-
-chmod +x "$BASE"/*
-
-pkg update -y >/dev/null 2>&1 || true
-pkg install -y zsh git curl ncurses-utils cmatrix >/dev/null 2>&1 || true
-
-[ -d "$HOME/.oh-my-zsh" ] || git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git "$HOME/.oh-my-zsh" >/dev/null 2>&1 || true
-CUSTOM="$HOME/.oh-my-zsh/custom"
-[ -d "$CUSTOM/plugins/zsh-autosuggestions" ] || git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git "$CUSTOM/plugins/zsh-autosuggestions" >/dev/null 2>&1 || true
-[ -d "$CUSTOM/plugins/zsh-syntax-highlighting" ] || git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git "$CUSTOM/plugins/zsh-syntax-highlighting" >/dev/null 2>&1 || true
-
-[ -f "$HOME/.zshrc" ] && cp "$HOME/.zshrc" "$HOME/.zshrc.jihad-backup"
-
-cat > "$HOME/.zshrc" <<'EOF'
-export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME=""
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
-source "$ZSH/oh-my-zsh.sh"
-export TERM="xterm-256color"
-JB="$HOME/.jihad-termux"
-alias banner="bash $JB/banner"
-alias owner="bash $JB/owner"
-alias sysinfo="bash $JB/sysinfo"
-alias matrix="bash $JB/matrix"
-alias prompts="bash $JB/prompts"
-alias reload="source ~/.zshrc"
-alias cls="clear && bash $JB/banner"
-PROMPT='%F{46}%B╭─[%F{51}JIHAD BHAI%F{46}]─[%F{141}%~%F{46}]─[%F{226}%D{%H:%M}%F{46}]%b
-%F{46}╰─%F{51}❯%f '
-if [[ -o interactive ]]; then bash "$JB/banner"; fi
-EOF
-
-echo
-echo -e "${GREEN}${BOLD}✓ JIHAD BHAI MASTER TERMUX INSTALLED${RESET}"
-echo -e "${CYAN}Telegram: @TEAM_XBD1M${RESET}"
-echo -e "${YELLOW}Owner PIN: 7860${RESET}"
-echo
-exec zsh
