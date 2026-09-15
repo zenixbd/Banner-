@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ==============================================================================
 # JIHAD BHAI MASTER TERMUX INSTALLER (install.sh)
-# Single-file production-ready installer with Thick ASCII Renderer & Owner Panel
+# Single-file production-ready installer with Thick ASCII Renderer & Persistent Loop
 # ==============================================================================
 
 set -e
@@ -372,24 +372,60 @@ EOF
 fi
 
 # ------------------------------------------------------------------------------
-# Final Output Display
+# Persistent Interactive Loop Screen (অনবরত চালু থাকবে)
 # ------------------------------------------------------------------------------
 load_config
 
-clear
-echo -e "\033[1;32m╔════════════════════════════════════════════════╗\033[0m"
-echo -e "\033[1;32m║       ✅ INSTALLATION COMPLETE                ║\033[0m"
-echo -e "\033[1;32m╚════════════════════════════════════════════════╝\033[0m"
-echo ""
-echo -e "🎨 Banner: \033[1;36m$BANNER_NAME\033[0m"
-echo -e "👑 Owner : \033[1;33m$DEFAULT_OWNER\033[0m"
-echo -e "📱 Telegram: \033[1;34m$TELEGRAM\033[0m"
-echo ""
-echo -e "\033[1;35mCommands:\033[0m"
-echo "  banner"
-echo "  owner"
-echo "  sysinfo"
-echo "  matrix"
-echo ""
-echo -e "\033[1;32mRun:\033[0m"
-echo "  zsh"
+while true; do
+    clear
+    echo -e "\033[1;32m╔════════════════════════════════════════════════╗\033[0m"
+    echo -e "\033[1;32m║       ✅ INSTALLATION COMPLETE & ACTIVE       ║\033[0m"
+    echo -e "\033[1;32m╚════════════════════════════════════════════════╝\033[0m"
+    echo ""
+    echo -e "🎨 Banner: \033[1;36m$BANNER_NAME\033[0m"
+    echo -e "👑 Owner : \033[1;33m$DEFAULT_OWNER\033[0m"
+    echo -e "📱 Telegram: \033[1;34m$TELEGRAM\033[0m"
+    echo ""
+    echo -e "\033[1;35mQuick Actions:\033[0m"
+    echo "  [1] Show Banner"
+    echo "  [2] Open Owner Panel"
+    echo "  [3] System Info"
+    echo "  [4] Matrix Animation"
+    echo "  [5] Switch to ZSH Shell"
+    echo "  [0] Exit Installer"
+    echo ""
+    read -p "Select Command Option (or press Ctrl+C to stay): " RUN_CMD
+
+    case "$RUN_CMD" in
+        1)
+            clear
+            banner
+            echo ""
+            read -p "Press Enter to return to main menu..."
+            ;;
+        2)
+            owner
+            ;;
+        3)
+            clear
+            sysinfo
+            echo ""
+            read -p "Press Enter to return to main menu..."
+            ;;
+        4)
+            matrix
+            ;;
+        5)
+            echo -e "\033[1;32mStarting ZSH session...\033[0m"
+            zsh
+            ;;
+        0)
+            echo -e "\033[1;33mExiting installer script...\033[0m"
+            exit 0
+            ;;
+        *)
+            echo -e "\033[1;31mInvalid option!\033[0m"
+            sleep 1
+            ;;
+    esac
+done
