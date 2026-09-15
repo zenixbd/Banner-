@@ -625,93 +625,221 @@ case "$OPTION" in
 
     5)
         CODE="1;35"
-        NAME="Purple"
-    ;;
+#!/data/data/com.termux/files/usr/bin/bash
 
-    6)
-        CODE="1;36"
-        NAME="Cyan"
-    ;;
+BASE="$HOME/.jihad-termux"
+CONFIG="$BASE/config"
+HASH_FILE="$BASE/.owner_pin_hash"
+COLOR_FILE="$BASE/.banner_color"
 
-    7)
-        CODE="1;37"
-        NAME="White"
-    ;;
+echo
+echo "╔════════════════════════════════════════════════╗"
+echo "║               🔐 OWNER LOGIN                 ║"
+echo "╚════════════════════════════════════════════════╝"
+echo
 
-    8)
-        CODE="38;5;208"
-        NAME="Orange"
-    ;;
+read -r -s -p "🔑 Owner PIN: " ENTERED_PIN
+echo
 
-    9)
-        CODE="38;5;213"
-        NAME="Pink"
-    ;;
+INPUT_HASH=$(printf '%s' "$ENTERED_PIN" | sha256sum | awk '{print $1}')
+unset ENTERED_PIN
 
-    10)
-        CODE="38;5;117"
-        NAME="Light Blue"
-    ;;
+if [ ! -f "$HASH_FILE" ]; then
+    echo "❌ PIN HASH FILE NOT FOUND"
+    exit 1
+fi
 
-    0)
-        continue
-    ;;
+STORED_HASH=$(cat "$HASH_FILE")
 
-    *)
-        echo "❌ Invalid color."
-        continue
-    ;;
+if [ "$INPUT_HASH" != "$STORED_HASH" ]; then
+    unset INPUT_HASH STORED_HASH
+    echo
+    echo "❌ ACCESS DENIED"
+    exit 1
+fi
+
+unset INPUT_HASH STORED_HASH
+
+echo
+echo "✅ ACCESS GRANTED"
+echo
+
+while true
+do
+
+    echo "╔════════════════════════════════════════════════╗"
+    echo "║           👑 OWNER CONTROL PANEL             ║"
+    echo "╠════════════════════════════════════════════════╣"
+    echo "║ [1] Change Banner Name                        ║"
+    echo "║ [2] Change Telegram                           ║"
+    echo "║ [3] Change Banner Color                       ║"
+    echo "║ [4] Preview Banner                            ║"
+    echo "║ [5] Reset Banner                              ║"
+    echo "║ [0] Exit                                      ║"
+    echo "╚════════════════════════════════════════════════╝"
+    echo
+
+    read -r -p "Select Option: " OPTION
+
+    case "$OPTION" in
+
+        1)
+            echo
+            read -r -p "Enter New Banner Name: " NEW_NAME
+
+            if [ -z "$NEW_NAME" ]; then
+                echo "❌ Name cannot be empty."
+                continue
+            fi
+
+            sed -i "s/^OWNER_NAME=.*/OWNER_NAME=\"$NEW_NAME\"/" "$CONFIG"
+
+            echo
+            echo "✅ Banner Name Updated."
+            echo "➡ New Name: $NEW_NAME"
+            ;;
+
+        2)
+            echo
+            read -r -p "Enter New Telegram: " NEW_TG
+
+            if [ -z "$NEW_TG" ]; then
+                echo "❌ Telegram cannot be empty."
+                continue
+            fi
+
+            sed -i "s/^TELEGRAM=.*/TELEGRAM=\"$NEW_TG\"/" "$CONFIG"
+
+            echo
+            echo "✅ Telegram Updated."
+            ;;
+
+        3)
+            echo
+            echo "╔════════════════════════════════════════════════╗"
+            echo "║                 🎨 COLORS                    ║"
+            echo "╠════════════════════════════════════════════════╣"
+            echo "║ [1]  🟢 Green                                ║"
+            echo "║ [2]  🔴 Red                                  ║"
+            echo "║ [3]  🔵 Blue                                 ║"
+            echo "║ [4]  🟡 Yellow                               ║"
+            echo "║ [5]  🟣 Purple                               ║"
+            echo "║ [6]  🔷 Cyan                                 ║"
+            echo "║ [7]  ⚪ White                                ║"
+            echo "║ [8]  🟠 Orange                               ║"
+            echo "║ [9]  🌸 Pink                                 ║"
+            echo "║ [10] 💙 Light Blue                           ║"
+            echo "║ [0]  Cancel                                  ║"
+            echo "╚════════════════════════════════════════════════╝"
+            echo
+
+            read -r -p "Choose Color: " COLOR
+
+            case "$COLOR" in
+
+                1)
+                    CODE="1;32"
+                    NAME="Green"
+                    ;;
+
+                2)
+                    CODE="1;31"
+                    NAME="Red"
+                    ;;
+
+                3)
+                    CODE="1;34"
+                    NAME="Blue"
+                    ;;
+
+                4)
+                    CODE="1;33"
+                    NAME="Yellow"
+                    ;;
+
+                5)
+                    CODE="1;35"
+                    NAME="Purple"
+                    ;;
+
+                6)
+                    CODE="1;36"
+                    NAME="Cyan"
+                    ;;
+
+                7)
+                    CODE="1;37"
+                    NAME="White"
+                    ;;
+
+                8)
+                    CODE="38;5;208"
+                    NAME="Orange"
+                    ;;
+
+                9)
+                    CODE="38;5;213"
+                    NAME="Pink"
+                    ;;
+
+                10)
+                    CODE="38;5;117"
+                    NAME="Light Blue"
+                    ;;
+
+                0)
+                    continue
+                    ;;
+
+                *)
+                    echo "❌ Invalid color."
+                    continue
+                    ;;
+
+            esac
+
+            printf '%s\n' "$CODE" > "$COLOR_FILE"
+
+            chmod 600 "$COLOR_FILE"
+
+            echo
+            echo "✅ Banner color changed to: $NAME"
+            ;;
+
+        4)
+            echo
+            "$BASE/banner"
+            ;;
+
+        5)
+            cat > "$CONFIG" <<'CONFIGEOF'
+OWNER_NAME="JIHAD BHAI"
+TELEGRAM="@TEAM_XBD1M"
+CONFIGEOF
+
+            printf '1;32\n' > "$COLOR_FILE"
+
+            chmod 600 "$CONFIG"
+            chmod 600 "$COLOR_FILE"
+
+            echo
+            echo "✅ Banner reset successfully."
+            ;;
+
+        0)
+            echo
+            echo "👋 Owner Panel Closed."
+            exit 0
+            ;;
+
+        *)
+            echo
+            echo "❌ Invalid option."
+            ;;
 
     esac
 
-    printf '%s\n' "$CODE" > "$COLOR_FILE"
-
-    chmod 600 "$COLOR_FILE"
-
     echo
-    echo "✅ Color changed to $NAME."
-
-;;
-
-4)
-
-    "$BASE/banner"
-
-;;
-
-5)
-
-    cat > "$CONFIG" <<EOF
-OWNER_NAME="JIHAD BHAI"
-TELEGRAM="@TEAM_XBD1M"
-EOF
-
-    printf '1;32\n' > "$COLOR_FILE"
-
-    chmod 600 "$CONFIG"
-    chmod 600 "$COLOR_FILE"
-
-    echo
-    echo "✅ Banner reset successfully."
-
-;;
-
-0)
-
-    echo "👋 Owner Panel Closed."
-    exit 0
-
-;;
-
-*)
-
-    echo "❌ Invalid option."
-
-;;
-
-esac
-
-echo
 
 done
 EOF
